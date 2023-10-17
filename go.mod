@@ -1,6 +1,6 @@
 module github.com/rayfiyo/mazegohan
 
-go 1.21.3
+go 1.21
 
 require github.com/rivo/tview v0.0.0-20231007183732-6c844bdc5f7a
 
