@@ -1,6 +1,6 @@
 module github.com/rayfiyo/mazegohan
 
-go 1.21.3
+go 1.21
 
 require github.com/JoelOtter/termloop v0.0.0-20210806173944-5f7c38744afb
 
