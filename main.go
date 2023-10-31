@@ -3,6 +3,7 @@ package main
 import (
 	tl "github.com/JoelOtter/termloop"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 )
@@ -60,13 +61,13 @@ func generateMaze(w, h int) [][]rune {
 			maze[row][ch] = '*'
 		}
 	}
-	rand.Seed(time.Now().UnixNano())
+	rand.NewSource(time.Now().UnixNano())
 	point := &Point{x: rand.Intn(w), y: rand.Intn(h)}
 	maze[point.x][point.y] = 'S'
 	var last *Point
 	walls := adjacents(point, maze)
 	for len(walls) > 0 {
-		rand.Seed(time.Now().UnixNano())
+		rand.NewSource(time.Now().UnixNano())
 		wall := walls[rand.Intn(len(walls))]
 		for i, w := range walls {
 			if w.x == wall.x && w.y == wall.y {
@@ -111,9 +112,6 @@ type Block struct {
 	h         int // Height of maze
 	score     int
 	scoretext *tl.Text
-
-	Width  int
-	Height int
 }
 
 func NewBlock(x, y int, color tl.Attr, g *tl.Game, w, h, score int, scoretext *tl.Text) *Block {
@@ -154,8 +152,6 @@ func (b *Block) Tick(ev tl.Event) {
 			b.SetPosition(b.px, b.py+1)
 		}
 	}
-	// ランダムな i と j が tl.ColorDefault なら tl.ColorGreen を設置
-	// l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorDefault))
 }
 
 func (b *Block) Collide(c tl.Physical) {
@@ -170,6 +166,8 @@ func (b *Block) Collide(c tl.Physical) {
 			b.h *= 2
 			b.score *= 2
 			buildLevel(b.g, b.w, b.h, b.score)
+		case tl.ColorGreen:
+			gameOver()
 		}
 	}
 }
@@ -177,11 +175,12 @@ func (b *Block) Collide(c tl.Physical) {
 func buildLevel(g *tl.Game, w, h, score int) {
 	maze := generateMaze(w, h)
 	l := tl.NewBaseLevel(tl.Cell{})
+	random := 1
 	g.Screen().SetLevel(l)
 	g.Log("Building level with width %d and height %d", w, h)
 	scoretext := tl.NewText(0, 1, "Levels explored: "+strconv.Itoa(score),
 		tl.ColorBlue, tl.ColorBlack)
-	g.Screen().AddEntity(tl.NewText(0, 0, "Pyramid!", tl.ColorBlue, tl.ColorBlack))
+	g.Screen().AddEntity(tl.NewText(0, 0, "迷 路 ゲ ー ム ", tl.ColorBlue, tl.ColorBlack))
 	g.Screen().AddEntity(scoretext)
 	for i, row := range maze {
 		for j, path := range row {
@@ -192,11 +191,19 @@ func buildLevel(g *tl.Game, w, h, score int) {
 				l.AddEntity(NewBlock(i, j, col, g, w, h, score, scoretext))
 			} else if path == 'L' {
 				l.AddEntity(tl.NewRectangle(i, j, 2, 2, tl.ColorBlue))
-			} else {
-				l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorDefault))
+			} else if score > 4 {
+				if random == 1 {
+					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorGreen))
+				}
+				rand.NewSource(time.Now().UnixNano())
+				random = rand.Intn(30) + 1
 			}
 		}
 	}
+}
+
+func gameOver() {
+	os.Exit(0)
 }
 
 func main() {
