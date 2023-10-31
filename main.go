@@ -196,7 +196,7 @@ func buildLevel(g *tl.Game, w, h, score int) {
 	random := 1
 	g.Screen().SetLevel(l)
 	g.Log("Building level with width %d and height %d", w, h)
-	g.Screen().AddEntity(tl.NewText(0, 0, "Blue: goal🏆  / Green: dead☠  / Yellow: increase high power💪 ",
+	g.Screen().AddEntity(tl.NewText(0, 0, "Blue: goal🏆  / Green: dead☠  / Yellow: increase high power 10 cell💪 ",
 		tl.ColorWhite, tl.ColorBlack))
 	scoretext := tl.NewText(0, 2, "Levels explored: "+strconv.Itoa(score), tl.ColorWhite, tl.ColorBlack)
 	g.Screen().AddEntity(scoretext)
@@ -214,8 +214,10 @@ func buildLevel(g *tl.Game, w, h, score int) {
 				case 1:
 					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorYellow))
 				case 2:
-					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorGreen))
+					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorYellow))
 				case 3:
+					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorGreen))
+				case 4:
 					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorGreen))
 				}
 				rand.NewSource(time.Now().UnixNano())
@@ -235,7 +237,7 @@ func gameOver() {
 func main() {
 	g := tl.NewGame()
 	g.Screen().SetFps(60)
-	buildLevel(g, 6, 2, 1)
+	buildLevel(g, 3, 1, 1)
 	g.SetDebugOn(true)
 	g.Start()
 	fmt.Println("終了するには Ctrl+C")
