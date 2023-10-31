@@ -1,9 +1,10 @@
 package main
 
 import (
+	"fmt"
 	tl "github.com/JoelOtter/termloop"
 	"math/rand"
-	"os"
+	//"os"
 	"strconv"
 	"time"
 )
@@ -112,6 +113,7 @@ type Block struct {
 	h         int // Height of maze
 	score     int
 	scoretext *tl.Text
+	status    int
 }
 
 func NewBlock(x, y int, color tl.Attr, g *tl.Game, w, h, score int, scoretext *tl.Text) *Block {
@@ -121,6 +123,7 @@ func NewBlock(x, y int, color tl.Attr, g *tl.Game, w, h, score int, scoretext *t
 		h:         h,
 		score:     score,
 		scoretext: scoretext,
+		status:    0,
 	}
 	b.Rectangle = tl.NewRectangle(x, y, 1, 1, color)
 	return b
@@ -144,15 +147,26 @@ func (b *Block) Tick(ev tl.Event) {
 		switch ev.Key {
 		case tl.KeyArrowRight:
 			b.SetPosition(b.px+1, b.py)
+			b.status--
 		case tl.KeyArrowLeft:
 			b.SetPosition(b.px-1, b.py)
+			b.status--
 		case tl.KeyArrowUp:
 			b.SetPosition(b.px, b.py-1)
+			b.status--
 		case tl.KeyArrowDown:
 			b.SetPosition(b.px, b.py+1)
+			b.status--
 		}
 	}
 }
+
+/*
+func (g *tl.game) Tick(event tl.Event) {
+	strongCount := tl.NewText(0, 1, "high power💪 : "+strconv.Itoa(b.status), tl.ColorWhite, tl.ColorBlack)
+	screen.AddEntity(strongCount)
+}
+*/
 
 func (b *Block) Collide(c tl.Physical) {
 	if r, ok := c.(*tl.Rectangle); ok {
@@ -166,8 +180,12 @@ func (b *Block) Collide(c tl.Physical) {
 			b.h *= 2
 			b.score *= 2
 			buildLevel(b.g, b.w, b.h, b.score)
+		case tl.ColorYellow:
+			b.status += 10
 		case tl.ColorGreen:
-			gameOver()
+			if b.status < 1 {
+				gameOver()
+			}
 		}
 	}
 }
@@ -178,9 +196,9 @@ func buildLevel(g *tl.Game, w, h, score int) {
 	random := 1
 	g.Screen().SetLevel(l)
 	g.Log("Building level with width %d and height %d", w, h)
-	scoretext := tl.NewText(0, 1, "Levels explored: "+strconv.Itoa(score),
-		tl.ColorBlue, tl.ColorBlack)
-	g.Screen().AddEntity(tl.NewText(0, 0, "迷 路 ゲ ー ム ", tl.ColorBlue, tl.ColorBlack))
+	g.Screen().AddEntity(tl.NewText(0, 0, "Blue: goal🏆  / Green: dead☠  / Yellow: increase high power💪 ",
+		tl.ColorWhite, tl.ColorBlack))
+	scoretext := tl.NewText(0, 2, "Levels explored: "+strconv.Itoa(score), tl.ColorWhite, tl.ColorBlack)
 	g.Screen().AddEntity(scoretext)
 	for i, row := range maze {
 		for j, path := range row {
@@ -191,19 +209,27 @@ func buildLevel(g *tl.Game, w, h, score int) {
 				l.AddEntity(NewBlock(i, j, col, g, w, h, score, scoretext))
 			} else if path == 'L' {
 				l.AddEntity(tl.NewRectangle(i, j, 2, 2, tl.ColorBlue))
-			} else if score > 4 {
-				if random == 1 {
+			} else if score > 2 {
+				switch random {
+				case 1:
+					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorYellow))
+				case 2:
+					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorGreen))
+				case 3:
 					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorGreen))
 				}
 				rand.NewSource(time.Now().UnixNano())
-				random = rand.Intn(30) + 1
+				random = rand.Intn(60)
 			}
 		}
 	}
 }
 
 func gameOver() {
-	os.Exit(0)
+	g := tl.NewGame()
+	g.Screen().AddEntity(tl.NewText(24, 10, "Game Over", tl.ColorWhite, tl.ColorRed))
+	g.Screen().AddEntity(tl.NewText(24, 12, "Press Ctrl+C", tl.ColorWhite, tl.ColorRed))
+	g.Start()
 }
 
 func main() {
@@ -212,4 +238,5 @@ func main() {
 	buildLevel(g, 6, 2, 1)
 	g.SetDebugOn(true)
 	g.Start()
+	fmt.Println("終了するには Ctrl+C")
 }
