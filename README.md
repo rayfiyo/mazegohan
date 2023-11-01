@@ -3,7 +3,7 @@ This is a maze game using Golang.
 maze + gohan(ご飯) = mazegohan
 But this software does not include the gohan.
 
-# about game
+# About game
 ## 内容
 ランダムに生成され，指数関数的に難易度が増加する迷路をクリアしてください！
 ## 基本操作
@@ -15,7 +15,7 @@ But this software does not include the gohan.
 黄　: 数マスの間，パワーアップ💪（数マス移動する間は赤　を踏んでも死なない）
 白　: 壁
 ## 仕様上のヒント
-パワーアップが持続するマスのカウントは，黄色　のマスに乗る度にリセットされ，その度に新しい値がランダムで与えられます．（６～３０マス）
+パワーアップが持続するマスのカウントは，黄色　のマスに乗る度にリセットされ，その度に新しい値がランダムで与えられます．（最小６マス）
 つまり，黄色　のマスに複数回乗っても パワーアップが持続するマスのカウントは，増加（加算）しません．
 
 # LICENSE and Special Thanks
