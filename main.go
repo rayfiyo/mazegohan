@@ -136,6 +136,7 @@ func (b *Block) Draw(s *tl.Screen) {
 		sw, sh := s.Size()
 		x, y := b.Position()
 		l.SetOffset(sw/2-x, sh/2-y)
+		b.SetColor(tl.ColorGreen)
 	}
 	b.Rectangle.Draw(s)
 }
@@ -161,13 +162,6 @@ func (b *Block) Tick(ev tl.Event) {
 	}
 }
 
-/*
-func (g *tl.game) Tick(event tl.Event) {
-	strongCount := tl.NewText(0, 1, "high power💪 : "+strconv.Itoa(b.status), tl.ColorWhite, tl.ColorBlack)
-	screen.AddEntity(strongCount)
-}
-*/
-
 func (b *Block) Collide(c tl.Physical) {
 	if r, ok := c.(*tl.Rectangle); ok {
 		switch r.Color() {
@@ -181,8 +175,9 @@ func (b *Block) Collide(c tl.Physical) {
 			b.score *= 2
 			buildLevel(b.g, b.w, b.h, b.score)
 		case tl.ColorYellow:
-			b.status += 10
-		case tl.ColorGreen:
+			rand.NewSource(time.Now().UnixNano())
+			b.status = rand.Intn(24) + 6
+		case tl.ColorRed:
 			if b.status < 1 {
 				gameOver()
 			}
@@ -196,9 +191,9 @@ func buildLevel(g *tl.Game, w, h, score int) {
 	random := 1
 	g.Screen().SetLevel(l)
 	g.Log("Building level with width %d and height %d", w, h)
-	g.Screen().AddEntity(tl.NewText(0, 0, "Blue: goal🏆  / Green: dead☠  / Yellow: increase high power 10 cell💪 ",
+	g.Screen().AddEntity(tl.NewText(0, 0, "Blue: goal🏆  / Red: dead☠  / Yellow: power up💪 ",
 		tl.ColorWhite, tl.ColorBlack))
-	scoretext := tl.NewText(0, 2, "Levels explored: "+strconv.Itoa(score), tl.ColorWhite, tl.ColorBlack)
+	scoretext := tl.NewText(0, 2, "Difficulty level: "+strconv.Itoa(score), tl.ColorWhite, tl.ColorBlack)
 	g.Screen().AddEntity(scoretext)
 	for i, row := range maze {
 		for j, path := range row {
@@ -216,9 +211,9 @@ func buildLevel(g *tl.Game, w, h, score int) {
 				case 2:
 					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorYellow))
 				case 3:
-					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorGreen))
+					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorRed))
 				case 4:
-					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorGreen))
+					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorRed))
 				}
 				rand.NewSource(time.Now().UnixNano())
 				random = rand.Intn(60)
@@ -235,10 +230,10 @@ func gameOver() {
 }
 
 func main() {
+	fmt.Println("終了するには Ctrl+C")
 	g := tl.NewGame()
 	g.Screen().SetFps(60)
 	buildLevel(g, 3, 1, 1)
 	g.SetDebugOn(true)
 	g.Start()
-	fmt.Println("終了するには Ctrl+C")
 }
