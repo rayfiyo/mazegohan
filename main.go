@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	tl "github.com/JoelOtter/termloop"
+	"math"
 	"math/rand"
-	//"os"
 	"strconv"
 	"time"
 )
@@ -175,8 +175,40 @@ func (b *Block) Collide(c tl.Physical) {
 			b.score *= 2
 			buildLevel(b.g, b.w, b.h, b.score)
 		case tl.ColorYellow:
+			scoreRoot := int(math.Log2(float64(b.score))) - 3
 			rand.NewSource(time.Now().UnixNano())
-			b.status = rand.Intn(24) + 6
+			b.status = 6 + scoreRoot
+			for i := 0; i < 5; i++ {
+				b.status += rand.Intn(4)
+			}
+			for i := 0; i < scoreRoot && scoreRoot > 0; i++ {
+				switch rand.Intn(32) {
+				case 0:
+					b.status += rand.Intn(2) + 1
+					break
+				case 1:
+					b.status += rand.Intn(2) + 1
+					break
+				case 2:
+					b.status += rand.Intn(4) + 1
+					break
+				case 3:
+					b.status += rand.Intn(4) + 1
+					break
+				case 4:
+					b.status += rand.Intn(4) + 1
+					break
+				case 5:
+					b.status += rand.Intn(4) + 1
+					break
+				case 6:
+					b.status += rand.Intn(8) + 1
+					break
+				default:
+					b.status++
+					break
+				}
+			}
 		case tl.ColorRed:
 			if b.status < 1 {
 				gameOver()
@@ -190,7 +222,7 @@ func buildLevel(g *tl.Game, w, h, score int) {
 	l := tl.NewBaseLevel(tl.Cell{})
 	random := 1
 	g.Screen().SetLevel(l)
-	g.Log("Building level with width %d and height %d", w, h)
+	g.Log("width: %d / height: %d / Difficulty level: %d", w, h, score)
 	g.Screen().AddEntity(tl.NewText(0, 0, "Blue: goal🏆  / Red: dead☠  / Yellow: power up💪 ",
 		tl.ColorWhite, tl.ColorBlack))
 	scoretext := tl.NewText(0, 2, "Difficulty level: "+strconv.Itoa(score), tl.ColorWhite, tl.ColorBlack)
@@ -211,8 +243,6 @@ func buildLevel(g *tl.Game, w, h, score int) {
 				case 2:
 					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorYellow))
 				case 3:
-					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorRed))
-				case 4:
 					l.AddEntity(tl.NewRectangle(i, j, 1, 1, tl.ColorRed))
 				}
 				rand.NewSource(time.Now().UnixNano())
